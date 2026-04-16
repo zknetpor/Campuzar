@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CampusPress — Portal Berita Kampus</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #1a1a1a;
+    --surface: #1e1e1e;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #f0ede8;
+    --muted: #888;
+    --accent: #e8c547;
+    --accent2: #d4a520;
+    --red: #e05252;
+    --green: #4caf7d;
+    --blue: #5b9ef5;
+    --font-head: 'Playfair Display', serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --r: 8px;
+    --r2: 12px;
+    --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font-body); min-height:100vh; }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width:4px; height:4px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+  /* ===== TICKER ===== */
+  .ticker-wrap { background:var(--accent); color:#111; font-size:13px; font-weight:600; overflow:hidden; height:36px; display:flex; align-items:center; }
+  .ticker-label { background:#111; color:var(--accent); padding:0 16px; font-family:var(--font-mono); font-size:11px; letter-spacing:2px; text-transform:uppercase; white-space:nowrap; height:100%; display:flex; align-items:center; flex-shrink:0; z-index:2; }
+  .ticker-track { display:flex; animation:tickerScroll 30s linear infinite; gap:60px; padding-left:40px; white-space:nowrap; }
+  .ticker-track:hover { animation-play-state:paused; }
+  @keyframes tickerScroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+  .ticker-item::before { content:"◆ "; }
+
+  /* ===== HEADER ===== */
+  header { border-bottom:1px solid var(--border); position:sticky; top:0; z-index:100; background:rgba(10,10,10,0.95); backdrop-filter:blur(16px); }
+  .header-top { display:flex; align-items:center; justify-content:space-between; padding:16px 40px; }
+  .logo { font-family:var(--font-head); font-size:28px; font-weight:900; letter-spacing:-0.5px; cursor:pointer; }
+  .logo span { color:var(--accent); }
+  .header-meta { font-size:12px; color:var(--muted); text-align:right; font-family:var(--font-mono); }
+  .nav-bar { display:flex; align-items:center; gap:0; border-top:1px solid var(--border); overflow-x:auto; padding:0 40px; }
+  .nav-item { padding:12px 20px; font-size:13px; font-weight:500; cursor:pointer; white-space:nowrap; border-bottom:2px solid transparent; transition:all var(--transition); color:var(--muted); letter-spacing:0.5px; text-transform:uppercase; font-size:11px; }
+  .nav-item:hover, .nav-item.active { color:var(--text); border-bottom-color:var(--accent); }
+  .header-actions { display:flex; align-items:center; gap:12px; margin-left:auto; }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:8px 18px; border-radius:var(--r); font-size:13px; font-weight:500; cursor:pointer; border:none; transition:all var(--transition); font-family:var(--font-body); }
+  .btn-outline { background:transparent; border:1px solid var(--border2); color:var(--text); }
+  .btn-outline:hover { background:var(--surface); }
+  .btn-accent { background:var(--accent); color:#111; font-weight:600; }
+  .btn-accent:hover { background:var(--accent2); }
+  .btn-ghost { background:transparent; color:var(--muted); padding:6px 10px; }
+  .btn-ghost:hover { color:var(--text); }
+  .btn-danger { background:var(--red); color:#fff; }
+  .btn-success { background:var(--green); color:#111; }
+  .btn-sm { padding:5px 12px; font-size:12px; }
+
+  /* ===== PUBLIC VIEW ===== */
+  #public-view { display:block; }
+  #admin-view { display:none; }
+
+  /* HERO */
+  .hero { display:grid; grid-template-columns:1fr 380px; gap:1px; background:var(--border); border-bottom:1px solid var(--border); }
+  .hero-main { background:var(--bg); padding:0; position:relative; cursor:pointer; overflow:hidden; }
+  .hero-main:hover .hero-img { transform:scale(1.03); }
+  .hero-img { width:100%; height:480px; object-fit:cover; display:block; transition:transform 0.6s cubic-bezier(0.4,0,0.2,1); }
+  .hero-img-placeholder { width:100%; height:480px; background:var(--bg3); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:40px; }
+  .hero-content { position:absolute; bottom:0; left:0; right:0; padding:32px; background:linear-gradient(transparent, rgba(0,0,0,0.92)); }
+  .hero-badge { display:inline-block; background:var(--accent); color:#111; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:4px 10px; border-radius:3px; margin-bottom:12px; font-family:var(--font-mono); }
+  .hero-title { font-family:var(--font-head); font-size:clamp(20px,3vw,36px); font-weight:900; line-height:1.15; margin-bottom:12px; }
+  .hero-meta { font-size:12px; color:rgba(255,255,255,0.6); font-family:var(--font-mono); }
+  .hero-side { background:var(--bg); display:flex; flex-direction:column; gap:1px; background:var(--border); }
+  .hero-side-item { background:var(--bg); padding:20px 24px; cursor:pointer; transition:background var(--transition); display:flex; gap:16px; align-items:flex-start; }
+  .hero-side-item:hover { background:var(--bg2); }
+  .hero-side-thumb { width:80px; height:64px; object-fit:cover; border-radius:4px; flex-shrink:0; }
+  .hero-side-thumb-placeholder { width:80px; height:64px; background:var(--bg3); border-radius:4px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:20px; color:var(--muted); }
+  .hero-side-title { font-size:14px; font-weight:500; line-height:1.4; margin-bottom:6px; font-family:var(--font-head); }
+  .hero-side-meta { font-size:11px; color:var(--muted); font-family:var(--font-mono); }
+
+  /* ARTICLE GRID */
+  .section { padding:48px 40px; }
+  .section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; padding-bottom:12px; border-bottom:2px solid var(--border); }
+  .section-title { font-family:var(--font-head); font-size:20px; font-weight:700; }
+  .section-title span { color:var(--accent); }
+  .section-link { font-size:12px; color:var(--accent); cursor:pointer; font-family:var(--font-mono); letter-spacing:1px; text-transform:uppercase; }
+  .article-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:28px; }
+  .article-card { background:var(--bg2); border-radius:var(--r2); overflow:hidden; border:1px solid var(--border); transition:all var(--transition); cursor:pointer; }
+  .article-card:hover { border-color:var(--border2); transform:translateY(-2px); }
+  .article-card-img { width:100%; height:200px; object-fit:cover; display:block; }
+  .article-card-img-placeholder { width:100%; height:200px; background:var(--bg3); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:32px; }
+  .article-card-body { padding:20px; }
+  .article-card-cat { font-size:10px; font-weight:700; letter-spacing:2px; color:var(--accent); text-transform:uppercase; font-family:var(--font-mono); margin-bottom:8px; }
+  .article-card-title { font-family:var(--font-head); font-size:18px; font-weight:700; line-height:1.3; margin-bottom:10px; }
+  .article-card-excerpt { font-size:13px; color:var(--muted); line-height:1.6; margin-bottom:14px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .article-card-meta { display:flex; align-items:center; justify-content:space-between; font-size:11px; color:var(--muted); font-family:var(--font-mono); }
+
+  /* TAG BAR */
+  .tag-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px; }
+  .tag { display:inline-flex; align-items:center; padding:6px 14px; border-radius:20px; font-size:12px; cursor:pointer; border:1px solid var(--border); color:var(--muted); transition:all var(--transition); font-family:var(--font-mono); }
+  .tag:hover, .tag.active { border-color:var(--accent); color:var(--accent); background:rgba(232,197,71,0.08); }
+
+  /* ARTICLE DETAIL VIEW */
+  #detail-view { display:none; }
+  .detail-wrap { max-width:760px; margin:0 auto; padding:48px 40px; }
+  .detail-back { display:inline-flex; align-items:center; gap:8px; color:var(--muted); font-size:13px; cursor:pointer; margin-bottom:32px; font-family:var(--font-mono); letter-spacing:0.5px; transition:color var(--transition); }
+  .detail-back:hover { color:var(--accent); }
+  .detail-cat { font-size:11px; font-weight:700; letter-spacing:2px; color:var(--accent); text-transform:uppercase; font-family:var(--font-mono); margin-bottom:16px; }
+  .detail-title { font-family:var(--font-head); font-size:clamp(24px,4vw,48px); font-weight:900; line-height:1.1; margin-bottom:20px; }
+  .detail-meta { display:flex; align-items:center; gap:20px; font-size:12px; color:var(--muted); font-family:var(--font-mono); padding:16px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:32px; }
+  .detail-img { width:100%; border-radius:var(--r2); margin-bottom:32px; }
+  .detail-img-placeholder { width:100%; height:400px; background:var(--bg3); border-radius:var(--r2); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:48px; margin-bottom:32px; }
+  .detail-body { font-size:17px; line-height:1.85; color:rgba(240,237,232,0.9); }
+  .detail-body p { margin-bottom:1.4em; }
+  .detail-body h2 { font-family:var(--font-head); font-size:26px; font-weight:700; margin:2em 0 0.8em; }
+  .detail-body blockquote { border-left:3px solid var(--accent); padding-left:20px; margin:2em 0; font-style:italic; color:var(--muted); }
+  .detail-tags { display:flex; gap:8px; flex-wrap:wrap; margin-top:40px; padding-top:24px; border-top:1px solid var(--border); }
+
+  /* ===== ADMIN VIEW ===== */
+  .admin-layout { display:grid; grid-template-columns:260px 1fr; min-height:calc(100vh - 100px); }
+  .admin-sidebar { background:var(--bg2); border-right:1px solid var(--border); padding:24px 0; position:sticky; top:100px; height:calc(100vh - 100px); overflow-y:auto; }
+  .sidebar-section { margin-bottom:8px; }
+  .sidebar-label { font-size:10px; font-weight:600; letter-spacing:2px; color:var(--muted); text-transform:uppercase; font-family:var(--font-mono); padding:8px 24px; margin-top:16px; }
+  .sidebar-item { display:flex; align-items:center; gap:12px; padding:10px 24px; font-size:14px; cursor:pointer; transition:all var(--transition); color:var(--muted); border-left:2px solid transparent; }
+  .sidebar-item:hover { background:var(--surface); color:var(--text); }
+  .sidebar-item.active { background:var(--surface); color:var(--accent); border-left-color:var(--accent); }
+  .sidebar-icon { font-size:16px; width:20px; text-align:center; flex-shrink:0; }
+  .sidebar-badge { margin-left:auto; background:var(--accent); color:#111; font-size:10px; font-weight:700; padding:2px 7px; border-radius:10px; }
+  .admin-content { padding:32px 40px; overflow-y:auto; }
+  .admin-panel { display:none; }
+  .admin-panel.active { display:block; }
+  .panel-header { margin-bottom:28px; }
+  .panel-title { font-family:var(--font-head); font-size:26px; font-weight:700; margin-bottom:4px; }
+  .panel-subtitle { font-size:13px; color:var(--muted); }
+  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+  .stat-card { background:var(--surface); border-radius:var(--r2); padding:20px; border:1px solid var(--border); }
+  .stat-value { font-size:32px; font-weight:700; font-family:var(--font-mono); color:var(--text); margin-bottom:4px; }
+  .stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-size:11px; }
+  .stat-card.accent .stat-value { color:var(--accent); }
+
+  /* FORM */
+  .form-grid { display:grid; grid-template-columns:1fr 340px; gap:28px; }
+  .form-card { background:var(--bg2); border-radius:var(--r2); border:1px solid var(--border); padding:28px; }
+  .form-card-title { font-size:14px; font-weight:600; margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px; }
+  .form-group { margin-bottom:20px; }
+  .form-label { font-size:12px; font-weight:600; letter-spacing:0.5px; text-transform:uppercase; color:var(--muted); font-family:var(--font-mono); margin-bottom:8px; display:block; }
+  .form-input, .form-textarea, .form-select { width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:10px 14px; font-size:14px; color:var(--text); font-family:var(--font-body); transition:border-color var(--transition); outline:none; }
+  .form-input:focus, .form-textarea:focus, .form-select:focus { border-color:var(--accent); }
+  .form-textarea { resize:vertical; min-height:200px; line-height:1.6; }
+  .form-select option { background:var(--bg3); }
+  .form-input::placeholder, .form-textarea::placeholder { color:var(--muted); }
+
+  /* IMAGE UPLOAD */
+  .img-upload-area { border:2px dashed var(--border); border-radius:var(--r2); padding:32px; text-align:center; cursor:pointer; transition:all var(--transition); position:relative; overflow:hidden; }
+  .img-upload-area:hover, .img-upload-area.drag { border-color:var(--accent); background:rgba(232,197,71,0.05); }
+  .img-upload-area input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .img-upload-preview { width:100%; border-radius:var(--r); margin-top:16px; display:none; }
+  .img-upload-preview.show { display:block; }
+  .img-upload-icon { font-size:32px; margin-bottom:12px; }
+  .img-upload-text { font-size:13px; color:var(--muted); line-height:1.5; }
+  .img-upload-text strong { color:var(--accent); }
+
+  /* ARTICLES TABLE */
+  .articles-table { width:100%; border-collapse:collapse; }
+  .articles-table th { font-size:11px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--muted); font-family:var(--font-mono); padding:10px 16px; border-bottom:1px solid var(--border); text-align:left; }
+  .articles-table td { padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:14px; vertical-align:middle; }
+  .articles-table tr:hover td { background:var(--surface); }
+  .articles-table .td-img { width:56px; height:40px; object-fit:cover; border-radius:4px; }
+  .articles-table .td-img-placeholder { width:56px; height:40px; background:var(--bg3); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:16px; color:var(--muted); }
+  .status-badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; font-family:var(--font-mono); }
+  .status-published { background:rgba(76,175,125,0.15); color:var(--green); }
+  .status-draft { background:rgba(136,136,136,0.15); color:var(--muted); }
+  .status-featured { background:rgba(232,197,71,0.15); color:var(--accent); }
+  .td-actions { display:flex; align-items:center; gap:6px; }
+
+  /* SETTINGS */
+  .settings-row { display:flex; align-items:center; justify-content:space-between; padding:18px 0; border-bottom:1px solid var(--border); }
+  .settings-row:last-child { border-bottom:none; }
+  .settings-info { flex:1; }
+  .settings-name { font-size:14px; font-weight:500; margin-bottom:3px; }
+  .settings-desc { font-size:12px; color:var(--muted); }
+  .toggle { width:44px; height:24px; background:var(--bg3); border-radius:12px; cursor:pointer; position:relative; transition:background var(--transition); border:1px solid var(--border); flex-shrink:0; }
+  .toggle.on { background:var(--accent); border-color:var(--accent); }
+  .toggle::after { content:''; position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform var(--transition); }
+  .toggle.on::after { transform:translateX(20px); }
+
+  /* SEARCH */
+  .search-bar { display:flex; align-items:center; gap:8px; background:var(--bg3); border:1px solid var(--border); border-radius:var(--r); padding:8px 16px; margin-bottom:20px; }
+  .search-bar input { flex:1; background:none; border:none; outline:none; color:var(--text); font-size:14px; font-family:var(--font-body); }
+  .search-bar input::placeholder { color:var(--muted); }
+  .search-icon { color:var(--muted); font-size:16px; }
+
+  /* CATEGORY CHIPS */
+  .cat-list { display:flex; flex-direction:column; gap:8px; }
+  .cat-item { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border-radius:var(--r); padding:10px 14px; border:1px solid var(--border); }
+  .cat-item-name { font-size:14px; font-weight:500; display:flex; align-items:center; gap:10px; }
+  .cat-dot { width:8px; height:8px; border-radius:50%; }
+
+  /* MODAL */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:1000; display:none; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--bg2); border-radius:var(--r2); border:1px solid var(--border2); padding:32px; width:100%; max-width:500px; animation:modalIn 0.25s cubic-bezier(0.4,0,0.2,1); }
+  @keyframes modalIn { from{opacity:0;transform:scale(0.95) translateY(10px)} to{opacity:1;transform:none} }
+  .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+  .modal-title { font-family:var(--font-head); font-size:20px; font-weight:700; }
+  .modal-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:20px; line-height:1; padding:4px; transition:color var(--transition); }
+  .modal-close:hover { color:var(--text); }
+
+  /* TOAST */
+  .toast { position:fixed; bottom:24px; right:24px; background:var(--surface); border:1px solid var(--border2); border-radius:var(--r); padding:14px 20px; font-size:14px; z-index:9999; display:none; align-items:center; gap:10px; animation:toastIn 0.3s ease; box-shadow:0 8px 32px rgba(0,0,0,0.4); }
+  .toast.show { display:flex; }
+  .toast.success { border-color:var(--green); }
+  .toast.error { border-color:var(--red); }
+  @keyframes toastIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+  /* EDITOR TOOLBAR */
+  .editor-toolbar { display:flex; gap:4px; flex-wrap:wrap; padding:10px; background:var(--bg3); border:1px solid var(--border); border-bottom:none; border-radius:var(--r) var(--r) 0 0; }
+  .editor-btn { background:none; border:1px solid transparent; border-radius:4px; padding:4px 10px; font-size:13px; color:var(--muted); cursor:pointer; font-family:var(--font-body); transition:all var(--transition); }
+  .editor-btn:hover { background:var(--surface); color:var(--text); border-color:var(--border); }
+  .editor-textarea { border-radius:0 0 var(--r) var(--r) !important; }
+
+  /* EMPTY STATE */
+  .empty-state { text-align:center; padding:60px 20px; color:var(--muted); }
+  .empty-state-icon { font-size:48px; margin-bottom:16px; }
+  .empty-state-text { font-size:15px; margin-bottom:20px; }
+
+  /* PAGINATION */
+  .pagination { display:flex; gap:6px; justify-content:center; margin-top:32px; }
+  .page-btn { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border-radius:var(--r); border:1px solid var(--border); background:var(--bg2); cursor:pointer; font-size:13px; font-family:var(--font-mono); transition:all var(--transition); color:var(--muted); }
+  .page-btn:hover, .page-btn.active { background:var(--accent); color:#111; border-color:var(--accent); font-weight:600; }
+
+  /* FOOTER */
+  footer { background:var(--bg2); border-top:1px solid var(--border); padding:40px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:32px; }
+  .footer-logo { font-family:var(--font-head); font-size:22px; font-weight:900; }
+  .footer-logo span { color:var(--accent); }
+  .footer-desc { font-size:13px; color:var(--muted); margin-top:8px; line-height:1.6; }
+  .footer-title { font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--muted); margin-bottom:12px; font-family:var(--font-mono); }
+  .footer-links { display:flex; flex-direction:column; gap:8px; }
+  .footer-link { font-size:13px; color:var(--muted); cursor:pointer; transition:color var(--transition); }
+  .footer-link:hover { color:var(--accent); }
+  .footer-bottom { background:var(--bg); border-top:1px solid var(--border); padding:16px 40px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--muted); font-family:var(--font-mono); }
+
+  /* RESPONSIVE */
+  @media(max-width:900px) {
+    .hero { grid-template-columns:1fr; }
+    .hero-side { display:none; }
+    .stats-grid { grid-template-columns:repeat(2,1fr); }
+    .form-grid { grid-template-columns:1fr; }
+    .admin-layout { grid-template-columns:1fr; }
+    .admin-sidebar { display:none; }
+    footer { grid-template-columns:1fr; }
+    .header-top { padding:12px 20px; }
+    .nav-bar { padding:0 20px; }
+    .section { padding:32px 20px; }
+  }
+
+  /* SEARCH RESULTS */
+  .search-results-page { padding:40px; }
+  .search-header { margin-bottom:32px; }
+  .search-term { font-family:var(--font-head); font-size:28px; font-weight:700; }
+  .search-term span { color:var(--accent); }
+  .search-count { font-size:13px; color:var(--muted); margin-top:4px; font-family:var(--font-mono); }
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker-wrap" id="ticker-wrap">
+  <div class="ticker-label">BERITA TERKINI</div>
+  <div class="ticker-track" id="ticker-track">
+    <span class="ticker-item">Selamat datang di Portal Berita Kampus</span>
+    <span class="ticker-item">Informasi terbaru seputar kegiatan akademik</span>
+    <span class="ticker-item">Pendaftaran mahasiswa baru telah dibuka</span>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-top">
+    <div class="logo" onclick="showHome()">Campus<span>Press</span></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="header-meta" id="header-date"></div>
+      <button class="btn btn-outline" style="font-size:12px;" onclick="openSearch()">🔍 Cari</button>
+      <button class="btn btn-accent" onclick="toggleView()" id="view-toggle-btn">⚙ Panel Admin</button>
+    </div>
+  </div>
+  <div class="nav-bar" id="main-nav">
+    <div class="nav-item active" onclick="filterCategory('Semua',this)">Semua</div>
+    <div class="nav-item" onclick="filterCategory('Akademik',this)">Akademik</div>
+    <div class="nav-item" onclick="filterCategory('Mahasiswa',this)">Mahasiswa</div>
+    <div class="nav-item" onclick="filterCategory('Penelitian',this)">Penelitian</div>
+    <div class="nav-item" onclick="filterCategory('Kampus',this)">Kampus</div>
+    <div class="nav-item" onclick="filterCategory('Prestasi',this)">Prestasi</div>
+    <div class="nav-item" onclick="filterCategory('Teknologi',this)">Teknologi</div>
+    <div class="nav-item" onclick="filterCategory('Sosial',this)">Sosial</div>
+    <div class="header-actions">
+    </div>
+  </div>
+</header>
+
+<!-- ============ PUBLIC VIEW ============ -->
+<div id="public-view">
+  <!-- HERO -->
+  <div class="hero" id="hero-section">
+    <!-- Dynamically populated -->
+  </div>
+
+  <!-- MAIN ARTICLES -->
+  <div class="section" id="main-articles-section">
+    <div class="section-header">
+      <div class="section-title">Berita <span>Terbaru</span></div>
+    </div>
+    <div class="tag-bar" id="tag-bar"></div>
+    <div class="article-grid" id="article-grid"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="footer-logo">Campus<span>Press</span></div>
+      <div class="footer-desc" id="footer-desc">Portal berita resmi kampus. Menyajikan informasi terkini seputar akademik, riset, dan kehidupan kampus.</div>
+    </div>
+    <div>
+      <div class="footer-title">Kategori</div>
+      <div class="footer-links" id="footer-cats"></div>
+    </div>
+    <div>
+      <div class="footer-title">Hubungi Kami</div>
+      <div class="footer-links" id="footer-contact"></div>
+    </div>
+  </footer>
+  <div class="footer-bottom">
+    <span id="footer-copyright">© 2024 CampusPress. Hak cipta dilindungi.</span>
+    <span id="footer-tagline" style="font-size:11px;">Portal Berita Kampus</span>
+  </div>
+</div>
+
+<!-- ============ DETAIL VIEW ============ -->
+<div id="detail-view">
+  <div class="detail-wrap">
+    <div class="detail-back" onclick="closeDetail()">← Kembali ke Beranda</div>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<!-- ============ SEARCH VIEW ============ -->
+<div id="search-view" style="display:none;">
+  <div class="search-results-page">
+    <div class="search-header">
+      <div class="search-term">Hasil pencarian: <span id="search-term-display"></span></div>
+      <div class="search-count" id="search-count-display"></div>
+    </div>
+    <div class="article-grid" id="search-results-grid"></div>
+    <div style="text-align:center;margin-top:24px;">
+      <button class="btn btn-outline" onclick="closeSearch()">← Kembali</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADMIN VIEW ============ -->
+<div id="admin-view">
+  <div class="admin-layout">
+    <div class="admin-sidebar">
+      <div class="sidebar-label">Menu Utama</div>
+      <div class="sidebar-item active" onclick="showPanel('dashboard',this)"><span class="sidebar-icon">📊</span>Dashboard</div>
+      <div class="sidebar-item" onclick="showPanel('articles',this)"><span class="sidebar-icon">📰</span>Kelola Artikel<span class="sidebar-badge" id="article-count-badge">0</span></div>
+      <div class="sidebar-item" onclick="showPanel('new-article',this)"><span class="sidebar-icon">✏️</span>Buat Artikel Baru</div>
+      <div class="sidebar-label">Konfigurasi</div>
+      <div class="sidebar-item" onclick="showPanel('categories',this)"><span class="sidebar-icon">🏷️</span>Kategori</div>
+      <div class="sidebar-item" onclick="showPanel('ticker',this)"><span class="sidebar-icon">📢</span>Running Text</div>
+      <div class="sidebar-item" onclick="showPanel('settings',this)"><span class="sidebar-icon">⚙️</span>Pengaturan Web</div>
+      <div class="sidebar-item" onclick="showPanel('appearance',this)"><span class="sidebar-icon">🎨</span>Tampilan</div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- DASHBOARD -->
+      <div class="admin-panel active" id="panel-dashboard">
+        <div class="panel-header">
+          <div class="panel-title">Dashboard</div>
+          <div class="panel-subtitle">Ringkasan portal berita kampus Anda</div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card accent"><div class="stat-value" id="stat-total">0</div><div class="stat-label">Total Artikel</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-published">0</div><div class="stat-label">Dipublikasikan</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-draft">0</div><div class="stat-label">Draft</div></div>
+          <div class="stat-card"><div class="stat-value" id="stat-cats">0</div><div class="stat-label">Kategori</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div class="form-card">
+            <div class="form-card-title">📰 Artikel Terbaru</div>
+            <div id="recent-articles-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+          </div>
+          <div class="form-card">
+            <div class="form-card-title">⚡ Aksi Cepat</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button class="btn btn-accent" onclick="showPanel('new-article',document.querySelector('[onclick*=new-article]'))">✏️ Tulis Artikel Baru</button>
+              <button class="btn btn-outline" onclick="showPanel('articles',document.querySelector('[onclick*=articles]'))">📋 Lihat Semua Artikel</button>
+              <button class="btn btn-outline" onclick="showPanel('ticker',document.querySelector('[onclick*=ticker]'))">📢 Edit Running Text</button>
+              <button class="btn btn-outline" onclick="showPanel('settings',document.querySelector('[onclick*=settings]'))">⚙️ Pengaturan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW/EDIT ARTICLE -->
+      <div class="admin-panel" id="panel-new-article">
+        <div class="panel-header">
+          <div class="panel-title" id="article-form-title">✏️ Buat Artikel Baru</div>
+          <div class="panel-subtitle">Tulis dan publikasikan berita kampus</div>
+        </div>
+        <div class="form-grid">
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <div class="form-card">
+              <div class="form-card-title">📝 Konten Artikel</div>
+              <div class="form-group">
+                <label class="form-label">Judul Artikel *</label>
+                <input type="text" class="form-input" id="art-title" placeholder="Masukkan judul berita yang menarik...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ringkasan / Excerp *</label>
+                <textarea class="form-textarea" id="art-excerpt" placeholder="Tulis ringkasan singkat artikel (1-2 kalimat)..." style="min-height:80px;"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Isi Artikel *</label>
+                <div class="editor-toolbar">
+                  <button class="editor-btn" onclick="insertFormat('**','**')"><b>B</b></button>
+                  <button class="editor-btn" onclick="insertFormat('*','*')"><i>I</i></button>
+                  <button class="editor-btn" onclick="insertFormat('\n## ','')">H2</button>
+                  <button class="editor-btn" onclick="insertFormat('\n> ','')">❝</button>
+                  <button class="editor-btn" onclick="insertFormat('\n- ','')">• List</button>
+                  <button class="editor-btn" onclick="insertFormat('\n\n','')">¶ Para</button>
+                </div>
+                <textarea class="form-textarea editor-textarea" id="art-body" placeholder="Tulis konten berita di sini...&#10;&#10;Gunakan ## untuk heading&#10;Gunakan > untuk quote&#10;Gunakan - untuk list" style="min-height:300px;border-radius:0 0 8px 8px!important;"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:20px;">
+            <div class="form-card">
+              <div class="form-card-title">🖼️ Gambar Utama</div>
+              <div class="img-upload-area" id="img-drop-area">
+                <input type="file" id="art-img-input" accept="image/*" onchange="handleImageUpload(event)">
+                <div class="img-upload-icon">🖼️</div>
+                <div class="img-upload-text"><strong>Klik atau seret gambar</strong><br>JPG, PNG, GIF (maks. 5MB)</div>
+              </div>
+              <img class="img-upload-preview" id="img-preview" alt="Preview">
+              <div style="margin-top:12px;">
+                <label class="form-label">URL Gambar (opsional)</label>
+                <input type="text" class="form-input" id="art-img-url" placeholder="https://..." oninput="updateImgFromUrl(this.value)">
+              </div>
+            </div>
+
+            <div class="form-card">
+              <div class="form-card-title">⚙️ Pengaturan Artikel</div>
+              <div class="form-group">
+                <label class="form-label">Kategori *</label>
+                <select class="form-select" id="art-category"></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Penulis</label>
+                <input type="text" class="form-input" id="art-author" placeholder="Nama penulis...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tags (pisah dengan koma)</label>
+                <input type="text" class="form-input" id="art-tags" placeholder="mahasiswa, beasiswa, akademik...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Status</label>
+                <select class="form-select" id="art-status">
+                  <option value="published">Publikasikan</option>
+                  <option value="draft">Simpan sebagai Draft</option>
+                  <option value="featured">Jadikan Artikel Unggulan</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Tampilkan di Hero</label>
+                <select class="form-select" id="art-hero">
+                  <option value="false">Tidak</option>
+                  <option value="true">Ya</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <button class="btn btn-accent" onclick="saveArticle()" style="width:100%;justify-content:center;padding:12px;">💾 Simpan Artikel</button>
+              <button class="btn btn-outline" onclick="cancelEdit()" style="width:100%;justify-content:center;">Batal</button>
+              <input type="hidden" id="edit-id" value="">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ARTICLES LIST -->
+      <div class="admin-panel" id="panel-articles">
+        <div class="panel-header" style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div>
+            <div class="panel-title">📰 Kelola Artikel</div>
+            <div class="panel-subtitle">Lihat, edit, atau hapus artikel yang ada</div>
+          </div>
+          <button class="btn btn-accent" onclick="showPanel('new-article',document.querySelector('[onclick*=new-article]'))">+ Artikel Baru</button>
+        </div>
+        <div class="search-bar"><span class="search-icon">🔍</span><input type="text" placeholder="Cari artikel..." id="admin-search" oninput="renderArticleTable()"></div>
+        <div style="overflow-x:auto;">
+          <table class="articles-table">
+            <thead><tr>
+              <th>Gambar</th><th>Judul</th><th>Kategori</th><th>Penulis</th><th>Status</th><th>Tanggal</th><th>Aksi</th>
+            </tr></thead>
+            <tbody id="article-table-body"></tbody>
+          </table>
+        </div>
+        <div id="articles-empty" class="empty-state" style="display:none;">
+          <div class="empty-state-icon">📭</div>
+          <div class="empty-state-text">Belum ada artikel. Mulai tulis artikel pertama Anda!</div>
+          <button class="btn btn-accent" onclick="showPanel('new-article',null)">✏️ Buat Artikel</button>
+        </div>
+      </div>
+
+      <!-- CATEGORIES -->
+      <div class="admin-panel" id="panel-categories">
+        <div class="panel-header">
+          <div class="panel-title">🏷️ Kelola Kategori</div>
+          <div class="panel-subtitle">Tambah atau hapus kategori berita</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div class="form-card">
+            <div class="form-card-title">+ Tambah Kategori Baru</div>
+            <div class="form-group">
+              <label class="form-label">Nama Kategori</label>
+              <input type="text" class="form-input" id="new-cat-name" placeholder="contoh: Olahraga">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Warna</label>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;" id="color-picker">
+                <div class="cat-color-opt" data-color="#e8c547" style="width:28px;height:28px;border-radius:50%;background:#e8c547;cursor:pointer;border:2px solid transparent;" onclick="selectColor('#e8c547',this)"></div>
+                <div class="cat-color-opt" data-color="#5b9ef5" style="width:28px;height:28px;border-radius:50%;background:#5b9ef5;cursor:pointer;border:2px solid transparent;" onclick="selectColor('#5b9ef5',this)"></div>
+                <div class="cat-color-opt" data-color="#4caf7d" style="width:28px;height:28px;border-radius:50%;background:#4caf7d;cursor:pointer;border:2px solid transparent;" onclick="selectColor('#4caf7d',this)"></div>
+                <div class="cat-color-opt" data-color="#e05252" style="width:28px;height:28px;border-radius:50%;background:#e05252;cursor:pointer;border:2px solid transparent;" onclick="selectColor('#e05252',this)"></div>
+                <div class="cat-color-opt" data-color="#c47ef0" style="width:28px;height:28px;border-radius:50%;background:#c47ef0;cursor:pointer;border:2px solid transparent;" onclick="selectColor('#c47ef0',this)"></div>
+                <div class="cat-color-opt" data-color="#f0914d" style="width:28px;height:28px;border-radius:50%;background:#f0914d;cursor:pointer;border:2px solid transparent;" onclick="selectColor('#f0914d',this)"></div>
+                <input type="color" id="custom-color" style="width:28px;height:28px;border-radius:50%;cursor:pointer;border:none;padding:0;background:none;" title="Pilih warna kustom" oninput="selectColor(this.value,null)">
+              </div>
+              <input type="hidden" id="selected-color" value="#e8c547">
+            </div>
+            <button class="btn btn-accent" onclick="addCategory()" style="width:100%;justify-content:center;">+ Tambah Kategori</button>
+          </div>
+          <div class="form-card">
+            <div class="form-card-title">📋 Daftar Kategori</div>
+            <div class="cat-list" id="cat-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TICKER / RUNNING TEXT -->
+      <div class="admin-panel" id="panel-ticker">
+        <div class="panel-header">
+          <div class="panel-title">📢 Running Text / Ticker</div>
+          <div class="panel-subtitle">Kelola teks berjalan di bagian atas halaman</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div class="form-card">
+            <div class="form-card-title">+ Tambah Teks Baru</div>
+            <div class="form-group">
+              <label class="form-label">Isi Teks</label>
+              <input type="text" class="form-input" id="new-ticker-text" placeholder="Tulis pengumuman atau berita singkat...">
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-accent" onclick="addTickerItem()" style="flex:1;justify-content:center;">+ Tambah</button>
+              <button class="btn btn-outline" onclick="clearAllTicker()" style="flex:1;justify-content:center;">Hapus Semua</button>
+            </div>
+          </div>
+          <div class="form-card">
+            <div class="form-card-title">📋 Daftar Running Text</div>
+            <div id="ticker-items-list" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;"></div>
+          </div>
+        </div>
+        <div class="form-card" style="margin-top:20px;">
+          <div class="form-card-title">⚙️ Pengaturan Ticker</div>
+          <div class="settings-row">
+            <div class="settings-info"><div class="settings-name">Tampilkan Ticker</div><div class="settings-desc">Aktifkan atau nonaktifkan running text</div></div>
+            <div class="toggle on" id="ticker-toggle" onclick="toggleTicker()"></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info"><div class="settings-name">Label Ticker</div><div class="settings-desc">Teks label di kiri ticker</div></div>
+            <input type="text" class="form-input" id="ticker-label-input" value="BERITA TERKINI" style="width:200px;" oninput="updateTickerLabel(this.value)">
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="admin-panel" id="panel-settings">
+        <div class="panel-header">
+          <div class="panel-title">⚙️ Pengaturan Website</div>
+          <div class="panel-subtitle">Konfigurasi tampilan dan informasi portal berita</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+          <div class="form-card">
+            <div class="form-card-title">🌐 Identitas Situs</div>
+            <div class="form-group">
+              <label class="form-label">Nama Situs</label>
+              <input type="text" class="form-input" id="setting-site-name" placeholder="CampusPress" oninput="updateSiteName(this.value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tagline</label>
+              <input type="text" class="form-input" id="setting-tagline" placeholder="Portal Berita Kampus" oninput="updateTagline(this.value)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Deskripsi Footer</label>
+              <textarea class="form-textarea" id="setting-desc" style="min-height:80px;" oninput="updateDesc(this.value)"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Copyright</label>
+              <input type="text" class="form-input" id="setting-copyright" placeholder="© 2024 CampusPress" oninput="updateCopyright(this.value)">
+            </div>
+          </div>
+          <div class="form-card">
+            <div class="form-card-title">📬 Kontak & Navigasi</div>
+            <div class="form-group">
+              <label class="form-label">Email Redaksi</label>
+              <input type="text" class="form-input" id="setting-email" placeholder="redaksi@kampus.ac.id">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Telepon</label>
+              <input type="text" class="form-input" id="setting-phone" placeholder="+62 xxx-xxxx-xxxx">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Alamat Kampus</label>
+              <textarea class="form-textarea" id="setting-address" style="min-height:80px;" placeholder="Jl. Kampus No. 1..."></textarea>
+            </div>
+            <button class="btn btn-accent" onclick="saveSettings()" style="width:100%;justify-content:center;margin-top:8px;">💾 Simpan Pengaturan</button>
+          </div>
+        </div>
+        <div class="form-card" style="margin-top:20px;">
+          <div class="form-card-title">🔧 Fitur Website</div>
+          <div class="settings-row">
+            <div class="settings-info"><div class="settings-name">Tampilkan Footer</div><div class="settings-desc">Tampilkan bagian footer di halaman utama</div></div>
+            <div class="toggle on" id="footer-toggle" onclick="toggleFeature('footer')"></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info"><div class="settings-name">Tampilkan Hero Section</div><div class="settings-desc">Tampilkan artikel unggulan di bagian atas</div></div>
+            <div class="toggle on" id="hero-toggle" onclick="toggleFeature('hero')"></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info"><div class="settings-name">Tampilkan Tag/Filter</div><div class="settings-desc">Tampilkan tombol filter tag di daftar artikel</div></div>
+            <div class="toggle on" id="tags-toggle" onclick="toggleFeature('tags')"></div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-info"><div class="settings-name">Mode Dark (Default)</div><div class="settings-desc">Website menggunakan tema gelap</div></div>
+            <div class="toggle on" id="dark-toggle"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPEARANCE -->
+      <div class="admin-panel" id="panel-appearance">
+        <div class="panel-header">
+          <div class="panel-title">🎨 Tampilan Website</div>
+          <div class="panel-subtitle">Sesuaikan warna dan nama portal berita</div>
+        </div>
+        <div class="form-card">
+          <div class="form-card-title">🎨 Kustomisasi Warna Aksen</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:#e8c547;cursor:pointer;border:2px solid transparent;" onclick="changeAccent('#e8c547','#d4a520')" title="Gold"></div>
+            <div style="width:40px;height:40px;border-radius:50%;background:#5b9ef5;cursor:pointer;border:2px solid transparent;" onclick="changeAccent('#5b9ef5','#3a7de0')" title="Biru"></div>
+            <div style="width:40px;height:40px;border-radius:50%;background:#4caf7d;cursor:pointer;border:2px solid transparent;" onclick="changeAccent('#4caf7d','#3d8e65')" title="Hijau"></div>
+            <div style="width:40px;height:40px;border-radius:50%;background:#e05252;cursor:pointer;border:2px solid transparent;" onclick="changeAccent('#e05252','#c03a3a')" title="Merah"></div>
+            <div style="width:40px;height:40px;border-radius:50%;background:#c47ef0;cursor:pointer;border:2px solid transparent;" onclick="changeAccent('#c47ef0','#a05fd0')" title="Ungu"></div>
+            <div style="width:40px;height:40px;border-radius:50%;background:#f0914d;cursor:pointer;border:2px solid transparent;" onclick="changeAccent('#f0914d','#d07030')" title="Oranye"></div>
+            <div style="width:40px;height:40px;border-radius:50%;background:#20c8b0;cursor:pointer;border:2px solid transparent;" onclick="changeAccent('#20c8b0','#18a090')" title="Teal"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Warna Custom (Hex)</label>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="color" id="custom-accent" style="height:38px;width:80px;border-radius:4px;" oninput="changeAccent(this.value,this.value)">
+              <input type="text" class="form-input" id="custom-accent-hex" placeholder="#e8c547" style="width:140px;" oninput="if(this.value.match(/^#[0-9a-fA-F]{6}$/)){changeAccent(this.value,this.value)}">
+            </div>
+          </div>
+        </div>
+        <div class="form-card" style="margin-top:20px;">
+          <div class="form-card-title">🔤 Nama Portal</div>
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <div class="form-group" style="flex:1;margin-bottom:0;">
+              <label class="form-label">Teks Depan Logo</label>
+              <input type="text" class="form-input" id="logo-part1" value="Campus" oninput="updateLogo()">
+            </div>
+            <div class="form-group" style="flex:1;margin-bottom:0;">
+              <label class="form-label">Teks Belakang Logo (aksen)</label>
+              <input type="text" class="form-input" id="logo-part2" value="Press" oninput="updateLogo()">
+            </div>
+          </div>
+          <div style="margin-top:20px;padding:20px;background:var(--bg3);border-radius:var(--r);text-align:center;">
+            <div style="font-family:'Playfair Display',serif;font-size:32px;font-weight:900;" id="logo-preview">Campus<span id="logo-preview-accent" style="color:var(--accent)">Press</span></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px;">Preview Logo</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:20px;">
+          <button class="btn btn-accent" onclick="applyAppearance()" style="flex:1;justify-content:center;">✅ Terapkan Perubahan</button>
+        </div>
+      </div>
+
+    </div><!-- admin-content -->
+  </div>
+</div>
+
+<!-- MODAL: DELETE CONFIRM -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⚠️ Hapus Artikel</div>
+      <button class="modal-close" onclick="closeModal('delete-modal')">✕</button>
+    </div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:24px;">Apakah Anda yakin ingin menghapus artikel ini? Tindakan ini tidak dapat dibatalkan.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn btn-outline" onclick="closeModal('delete-modal')">Batal</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Hapus Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SEARCH -->
+<div class="modal-overlay" id="search-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🔍 Cari Artikel</div>
+      <button class="modal-close" onclick="closeModal('search-modal')">✕</button>
+    </div>
+    <input type="text" class="form-input" id="search-input" placeholder="Ketik kata kunci..." oninput="performSearch(this.value)" style="margin-bottom:16px;">
+    <div id="search-preview" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg">Berhasil!</span>
+</div>
+
+<script>
+// ===== STATE =====
+let state = {
+  articles: [],
+  categories: ['Akademik','Mahasiswa','Penelitian','Kampus','Prestasi','Teknologi','Sosial'],
+  categoryColors: { 'Akademik':'#5b9ef5','Mahasiswa':'#4caf7d','Penelitian':'#c47ef0','Kampus':'#e8c547','Prestasi':'#f0914d','Teknologi':'#20c8b0','Sosial':'#e05252' },
+  tickerItems: ['Selamat datang di Portal Berita Kampus','Informasi terbaru seputar kegiatan akademik','Pendaftaran mahasiswa baru telah dibuka'],
+  tickerOn: true,
+  tickerLabel: 'BERITA TERKINI',
+  settings: {
+    siteName: 'CampusPress',
+    tagline: 'Portal Berita Kampus',
+    desc: 'Portal berita resmi kampus. Menyajikan informasi terkini seputar akademik, riset, dan kehidupan kampus.',
+    copyright: '© 2024 CampusPress. Hak cipta dilindungi.',
+    email: 'redaksi@kampus.ac.id',
+    phone: '+62 811-0000-0000',
+    address: 'Jl. Kampus No. 1, Kota Pendidikan',
+  },
+  features: { footer:true, hero:true, tags:true },
+  currentFilter: 'Semua',
+  currentPage: 1,
+  pageSize: 6,
+  accentColor: '#e8c547',
+  accent2Color: '#d4a520',
+  logoP1: 'Campus',
+  logoP2: 'Press',
+  imgData: null,
+  editingId: null,
+  selectedCatColor: '#e8c547',
+};
+
+const ARTICLE_EMOJIS = ['📰','🗞️','📝','🎓','🏫','🔬','💡','🏆','🌟','📣'];
+let nextId = 1;
+
+// ===== SAMPLE DATA =====
+const sampleArticles = [
+  { id:nextId++, title:'Universitas Meraih Akreditasi A dari BAN-PT', excerpt:'Kabar membanggakan datang dari lembaga akreditasi nasional. Universitas kita resmi mendapatkan akreditasi tertinggi dengan nilai A.', body:'Setelah melalui proses panjang penilaian dan evaluasi selama 18 bulan, akhirnya universitas kita berhasil meraih akreditasi A dari Badan Akreditasi Nasional Perguruan Tinggi (BAN-PT).\n\n## Pencapaian Bersejarah\n\nHasil ini merupakan buah dari kerja keras seluruh sivitas akademika selama bertahun-tahun. Akreditasi A menandakan bahwa mutu pendidikan, penelitian, dan pengabdian masyarakat kita telah memenuhi standar tertinggi nasional.\n\n## Tanggapan Rektor\n\n> "Ini adalah pencapaian luar biasa yang menjadi bukti nyata komitmen kita terhadap kualitas pendidikan tinggi," ujar Rektor dalam konferensi pers.\n\nKe depan, universitas berkomitmen untuk terus meningkatkan kualitas layanan pendidikan dan penelitian demi menghasilkan lulusan yang kompetitif di tingkat global.', category:'Akademik', author:'Tim Redaksi', status:'featured', hero:true, tags:['akreditasi','prestasi','akademik'], date:'17 Apr 2025', img:null },
+  { id:nextId++, title:'Mahasiswa Teknik Informatika Juara Hackathon Nasional', excerpt:'Tim dari Fakultas Teknik Informatika berhasil merebut juara pertama dalam ajang Hackathon Nasional yang diikuti 150 tim dari seluruh Indonesia.', body:'Tiga mahasiswa semester 6 Teknik Informatika berhasil memenangkan kompetisi bergengsi Hackathon Nasional 2024 yang diselenggarakan oleh Kementerian Komunikasi dan Informatika.\n\n## Solusi Inovatif\n\nTim yang terdiri dari Andika, Rina, dan Budi ini mengembangkan aplikasi berbasis AI untuk membantu petani lokal memonitor kondisi tanaman secara real-time menggunakan smartphone.\n\n> "Kami ingin teknologi bisa bermanfaat langsung bagi masyarakat kecil," kata Andika selaku ketua tim.\n\nKemenangan ini membawa hadiah senilai Rp 50 juta dan kesempatan magang di perusahaan teknologi terkemuka.', category:'Prestasi', author:'Deni Susanto', status:'published', hero:true, tags:['hackathon','teknologi','prestasi'], date:'15 Apr 2025', img:null },
+  { id:nextId++, title:'Pembukaan Laboratorium Riset AI Pertama di Kampus', excerpt:'Kampus resmi membuka laboratorium kecerdasan buatan pertama yang dilengkapi peralatan komputasi canggih untuk mendukung penelitian dosen dan mahasiswa.', body:'Hari ini menandai babak baru dalam perjalanan riset kampus dengan diresmikannya Laboratorium Kecerdasan Buatan (AI Lab) oleh Menteri Pendidikan.\n\n## Fasilitas Canggih\n\nLab ini dilengkapi dengan:\n- 20 unit workstation dengan GPU NVIDIA RTX 4090\n- Server komputasi bertenaga tinggi\n- Ruang kolaborasi digital\n- Koneksi internet 10 Gbps\n\n## Program Riset\n\nBeberapa program riset yang akan dijalankan meliputi machine learning, computer vision, natural language processing, dan robotika.', category:'Penelitian', author:'Dr. Hasanuddin', status:'published', hero:false, tags:['riset','AI','laboratorium'], date:'14 Apr 2025', img:null },
+  { id:nextId++, title:'Beasiswa Penuh S2 ke Jepang Dibuka untuk Mahasiswa Berprestasi', excerpt:'Japan Foundation kembali membuka pendaftaran beasiswa penuh untuk jenjang S2 bagi mahasiswa Indonesia yang memenuhi persyaratan akademik.', body:'Kabar gembira bagi para mahasiswa yang bermimpi melanjutkan studi ke Jepang. Japan Foundation kembali membuka program beasiswa penuh untuk jenjang S2 tahun 2025.\n\n## Persyaratan Utama\n\n- IPK minimal 3.50\n- Usia maksimal 35 tahun\n- Kemampuan Bahasa Jepang JLPT N3 atau kemampuan Bahasa Inggris IELTS 6.5\n- Tidak sedang menerima beasiswa lain\n\n## Benefit Beasiswa\n\nPenerima beasiswa akan mendapatkan: biaya kuliah penuh, tunjangan hidup ¥150.000/bulan, tiket pesawat PP, dan asuransi kesehatan.\n\nPendaftaran dibuka hingga 30 Mei 2025 melalui website Japan Foundation Indonesia.', category:'Mahasiswa', author:'Biro Kemahasiswaan', status:'published', hero:false, tags:['beasiswa','jepang','s2'], date:'13 Apr 2025', img:null },
+  { id:nextId++, title:'Festival Budaya Nusantara Meriahkan Dies Natalis Kampus', excerpt:'Ribuan mahasiswa, dosen, dan alumni berkumpul dalam Festival Budaya Nusantara yang memukau, menampilkan kekayaan tradisi dari Sabang sampai Merauke.', body:'Dalam rangka memperingati Dies Natalis ke-45, kampus menggelar Festival Budaya Nusantara selama tiga hari yang menampilkan kesenian dan kuliner dari 34 provinsi di Indonesia.\n\n## Kemeriahan Acara\n\nFestival ini menampilkan lebih dari 200 pertunjukan seni budaya, dari tarian tradisional, musik daerah, pameran batik, hingga kuliner Nusantara yang menggugah selera.\n\n> "Festival ini adalah wujud nyata keberagaman yang menjadi kekuatan bangsa kita," ujar Ketua Panitia.\n\n## Partisipasi Mahasiswa\n\nLebih dari 1.500 mahasiswa terlibat sebagai penampil dan panitia, menjadikan festival ini sebagai ajang pemersatu keberagaman yang luar biasa.', category:'Kampus', author:'Humas Kampus', status:'published', hero:false, tags:['budaya','festival','dies natalis'], date:'12 Apr 2025', img:null },
+  { id:nextId++, title:'Dosen Muda Raih Penghargaan Riset Internasional', excerpt:'Dr. Siti Rahma dari Fakultas MIPA berhasil meraih penghargaan bergengsi dari IEEE atas penelitiannya di bidang material nanoteknologi.', body:'Kebanggaan kembali hadir dari kampus kita. Dr. Siti Rahma, dosen muda Fakultas MIPA berusia 32 tahun, berhasil meraih penghargaan IEEE Young Researcher Award atas penelitiannya di bidang nanomaterial untuk sel surya.\n\n## Penelitian Revolusioner\n\nPenelitian Dr. Siti berfokus pada pengembangan material graphene-perovskite yang mampu meningkatkan efisiensi sel surya hingga 45%, jauh di atas rata-rata panel surya konvensional.\n\n## Dampak Global\n\nTemuan ini berpotensi merevolusi industri energi terbarukan global dan memberikan solusi bagi krisis energi yang dihadapi dunia saat ini.', category:'Penelitian', author:'Tim Humas', status:'draft', hero:false, tags:['riset','penghargaan','energi'], date:'10 Apr 2025', img:null },
+];
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  state.articles = sampleArticles;
+  nextId = sampleArticles.length + 1;
+  updateHeaderDate();
+  renderAll();
+  populateCatSelect();
+  renderCatList();
+  renderTickerItems();
+  loadSettings();
+  updateStats();
+  renderRecentArticles();
+  setInterval(updateHeaderDate, 60000);
+});
+
+function updateHeaderDate() {
+  const d = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  document.getElementById('header-date').textContent = d.toLocaleDateString('id-ID', opts);
+}
+
+// ===== VIEWS =====
+let currentView = 'public';
+function toggleView() {
+  currentView = currentView === 'public' ? 'admin' : 'public';
+  document.getElementById('public-view').style.display = currentView === 'public' ? 'block' : 'none';
+  document.getElementById('admin-view').style.display = currentView === 'admin' ? 'block' : 'none';
+  document.getElementById('detail-view').style.display = 'none';
+  document.getElementById('search-view').style.display = 'none';
+  document.getElementById('view-toggle-btn').textContent = currentView === 'admin' ? '👁 Lihat Website' : '⚙ Panel Admin';
+  if(currentView === 'admin') { updateStats(); renderArticleTable(); renderRecentArticles(); }
+}
+function showHome() {
+  document.getElementById('public-view').style.display = 'block';
+  document.getElementById('detail-view').style.display = 'none';
+  document.getElementById('search-view').style.display = 'none';
+  currentView = 'public';
+  document.getElementById('view-toggle-btn').textContent = '⚙ Panel Admin';
+  document.getElementById('admin-view').style.display = 'none';
+  renderAll();
+}
+
+// ===== RENDER PUBLIC =====
+function renderAll() {
+  renderHero();
+  renderArticleGrid(state.articles.filter(a => a.status !== 'draft'), state.currentPage);
+  renderTagBar();
+  renderFooterCats();
+  renderFooterContact();
+}
+
+function renderHero() {
+  const heroEl = document.getElementById('hero-section');
+  if(!state.features.hero) { heroEl.style.display='none'; return; }
+  heroEl.style.display='';
+  const heroArticles = state.articles.filter(a => a.hero && a.status !== 'draft');
+  if(heroArticles.length === 0) { heroEl.innerHTML='<div style="padding:60px;text-align:center;color:var(--muted);width:100%">Belum ada artikel unggulan. Tandai artikel sebagai "Tampilkan di Hero" di Admin Panel.</div>'; return; }
+  const main = heroArticles[0];
+  const sides = state.articles.filter(a => a.status !== 'draft' && a.id !== main.id).slice(0,3);
+  let sideHtml = sides.map(a => `
+    <div class="hero-side-item" onclick="openArticle(${a.id})">
+      ${a.img ? `<img class="hero-side-thumb" src="${a.img}" alt="">` : `<div class="hero-side-thumb-placeholder">${ARTICLE_EMOJIS[a.id%ARTICLE_EMOJIS.length]}</div>`}
+      <div>
+        <div class="hero-side-title">${a.title}</div>
+        <div class="hero-side-meta">${a.category} · ${a.date}</div>
+      </div>
+    </div>`).join('');
+  heroEl.innerHTML = `
+    <div class="hero-main" onclick="openArticle(${main.id})">
+      ${main.img ? `<img class="hero-img" src="${main.img}" alt="${main.title}">` : `<div class="hero-img-placeholder">${ARTICLE_EMOJIS[main.id%ARTICLE_EMOJIS.length]}</div>`}
+      <div class="hero-content">
+        <div class="hero-badge">${main.category}</div>
+        <div class="hero-title">${main.title}</div>
+        <div class="hero-meta">${main.author} · ${main.date}</div>
+      </div>
+    </div>
+    <div class="hero-side">${sideHtml}</div>`;
+}
+
+function renderArticleGrid(articles, page=1) {
+  const grid = document.getElementById('article-grid');
+  const start = (page-1)*state.pageSize;
+  const paged = articles.slice(start, start+state.pageSize);
+  if(paged.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">📭</div><div class="empty-state-text">Belum ada artikel di kategori ini.</div></div>';
+    document.getElementById('pagination').innerHTML='';
+    return;
+  }
+  grid.innerHTML = paged.map(a => `
+    <div class="article-card" onclick="openArticle(${a.id})">
+      ${a.img ? `<img class="article-card-img" src="${a.img}" alt="">` : `<div class="article-card-img-placeholder">${ARTICLE_EMOJIS[a.id%ARTICLE_EMOJIS.length]}</div>`}
+      <div class="article-card-body">
+        <div class="article-card-cat">${a.category}</div>
+        <div class="article-card-title">${a.title}</div>
+        <div class="article-card-excerpt">${a.excerpt}</div>
+        <div class="article-card-meta"><span>${a.author}</span><span>${a.date}</span></div>
+      </div>
+    </div>`).join('');
+  renderPagination(articles.length, page);
+}
+
+function renderPagination(total, current) {
+  const pages = Math.ceil(total/state.pageSize);
+  const el = document.getElementById('pagination');
+  if(pages <= 1) { el.innerHTML=''; return; }
+  el.innerHTML = Array.from({length:pages},(_,i)=>`<div class="page-btn${i+1===current?' active':''}" onclick="goPage(${i+1})">${i+1}</div>`).join('');
+}
+function goPage(p) { state.currentPage=p; const filt = getFilteredArticles(); renderArticleGrid(filt,p); window.scrollTo(0,300); }
+
+function getFilteredArticles() {
+  let arts = state.articles.filter(a => a.status !== 'draft');
+  if(state.currentFilter !== 'Semua') arts = arts.filter(a => a.category === state.currentFilter);
+  return arts;
+}
+
+function filterCategory(cat, el) {
+  state.currentFilter = cat;
+  state.currentPage = 1;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  renderArticleGrid(getFilteredArticles(), 1);
+}
+
+function renderTagBar() {
+  const bar = document.getElementById('tag-bar');
+  if(!state.features.tags) { bar.style.display='none'; return; }
+  bar.style.display='';
+  const tags = [...new Set(state.articles.flatMap(a=>a.tags||[]))];
+  bar.innerHTML = tags.map(t => `<div class="tag" onclick="filterTag('${t}',this)">${t}</div>`).join('');
+}
+
+function filterTag(tag, el) {
+  document.querySelectorAll('.tag').forEach(t=>t.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const arts = state.articles.filter(a => a.status !== 'draft' && (a.tags||[]).includes(tag));
+  renderArticleGrid(arts, 1);
+}
+
+function renderFooterCats() {
+  document.getElementById('footer-cats').innerHTML = state.categories.map(c=>`<div class="footer-link" onclick="filterCategory('${c}',null)">${c}</div>`).join('');
+}
+function renderFooterContact() {
+  const s = state.settings;
+  document.getElementById('footer-contact').innerHTML = `
+    <div class="footer-link">✉ ${s.email||'redaksi@kampus.ac.id'}</div>
+    <div class="footer-link">📞 ${s.phone||'+62 xxx-xxxx-xxxx'}</div>
+    <div class="footer-link">📍 ${s.address||'Kampus'}</div>`;
+  document.getElementById('footer-desc').textContent = s.desc;
+  document.getElementById('footer-copyright').textContent = s.copyright;
+  document.getElementById('footer-tagline').textContent = s.tagline;
+}
+
+// ===== ARTICLE DETAIL =====
+function openArticle(id) {
+  const a = state.articles.find(x=>x.id===id);
+  if(!a) return;
+  document.getElementById('public-view').style.display='none';
+  document.getElementById('detail-view').style.display='block';
+  document.getElementById('search-view').style.display='none';
+  const bodyHtml = (a.body||'').split('\n\n').map(para => {
+    if(para.startsWith('## ')) return `<h2>${para.slice(3)}</h2>`;
+    if(para.startsWith('> ')) return `<blockquote>${para.slice(2)}</blockquote>`;
+    if(para.startsWith('- ') || para.includes('\n- ')) {
+      const items = para.split('\n').filter(l=>l.trim()).map(l=>`<li>${l.replace(/^-\s*/,'')}</li>`).join('');
+      return `<ul style="padding-left:24px;margin:0.5em 0">${items}</ul>`;
+    }
+    return `<p>${para.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>')}</p>`;
+  }).join('');
+  const tagsHtml = (a.tags||[]).map(t=>`<div class="tag">${t}</div>`).join('');
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-cat">${a.category}</div>
+    <div class="detail-title">${a.title}</div>
+    <div class="detail-meta"><span>✍ ${a.author}</span><span>📅 ${a.date}</span><span style="background:${a.status==='featured'?'rgba(232,197,71,0.15)':a.status==='draft'?'rgba(136,136,136,0.15)':'rgba(76,175,125,0.15)'};color:${a.status==='featured'?'var(--accent)':a.status==='draft'?'var(--muted)':'var(--green)'};padding:2px 10px;border-radius:10px;font-size:11px;">${a.status==='featured'?'⭐ Unggulan':a.status==='draft'?'📝 Draft':'✅ Dipublikasikan'}</span></div>
+    ${a.img ? `<img class="detail-img" src="${a.img}" alt="${a.title}">` : `<div class="detail-img-placeholder">${ARTICLE_EMOJIS[a.id%ARTICLE_EMOJIS.length]}</div>`}
+    <div class="detail-body">${bodyHtml}</div>
+    ${tagsHtml ? `<div class="detail-tags">${tagsHtml}</div>` : ''}`;
+  window.scrollTo(0,0);
+}
+function closeDetail() {
+  document.getElementById('public-view').style.display='block';
+  document.getElementById('detail-view').style.display='none';
+  window.scrollTo(0,0);
+}
+
+// ===== ADMIN PANELS =====
+function showPanel(id, el) {
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.sidebar-item').forEach(s=>s.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(id==='new-article' && !state.editingId) resetArticleForm();
+  if(id==='articles') renderArticleTable();
+  if(id==='categories') renderCatList();
+  if(id==='ticker') renderTickerItems();
+  if(id==='settings') loadSettings();
+  if(id==='dashboard') { updateStats(); renderRecentArticles(); }
+}
+
+// ===== ARTICLE FORM =====
+function resetArticleForm() {
+  state.editingId = null;
+  state.imgData = null;
+  document.getElementById('art-title').value='';
+  document.getElementById('art-excerpt').value='';
+  document.getElementById('art-body').value='';
+  document.getElementById('art-author').value='';
+  document.getElementById('art-tags').value='';
+  document.getElementById('art-status').value='published';
+  document.getElementById('art-hero').value='false';
+  document.getElementById('art-img-url').value='';
+  document.getElementById('img-preview').src='';
+  document.getElementById('img-preview').classList.remove('show');
+  document.getElementById('article-form-title').textContent='✏️ Buat Artikel Baru';
+  document.getElementById('edit-id').value='';
+  populateCatSelect();
+}
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024) { showToast('Ukuran file terlalu besar (maks. 5MB)','error'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.imgData = ev.target.result;
+    const prev = document.getElementById('img-preview');
+    prev.src = state.imgData;
+    prev.classList.add('show');
+    document.getElementById('art-img-url').value='[Gambar dari file upload]';
+  };
+  reader.readAsDataURL(file);
+}
+
+function updateImgFromUrl(url) {
+  if(!url || url === '[Gambar dari file upload]') return;
+  state.imgData = url;
+  const prev = document.getElementById('img-preview');
+  prev.src = url;
+  prev.classList.add('show');
+}
+
+function insertFormat(before, after) {
+  const ta = document.getElementById('art-body');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const sel = ta.value.substring(start, end);
+  ta.value = ta.value.substring(0,start) + before + sel + after + ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart = ta.selectionEnd = start + before.length + sel.length + after.length;
+}
+
+function populateCatSelect() {
+  const sel = document.getElementById('art-category');
+  sel.innerHTML = state.categories.map(c=>`<option value="${c}">${c}</option>`).join('');
+}
+
+function saveArticle() {
+  const title = document.getElementById('art-title').value.trim();
+  const excerpt = document.getElementById('art-excerpt').value.trim();
+  const body = document.getElementById('art-body').value.trim();
+  if(!title || !excerpt || !body) { showToast('Lengkapi judul, ringkasan, dan isi artikel!','error'); return; }
+  const tags = document.getElementById('art-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+  if(state.editingId) {
+    const idx = state.articles.findIndex(a=>a.id===state.editingId);
+    if(idx > -1) {
+      state.articles[idx] = { ...state.articles[idx],
+        title, excerpt, body,
+        category: document.getElementById('art-category').value,
+        author: document.getElementById('art-author').value||'Anonim',
+        tags, status: document.getElementById('art-status').value,
+        hero: document.getElementById('art-hero').value==='true',
+        img: state.imgData || state.articles[idx].img,
+      };
+      showToast('Artikel berhasil diperbarui!');
+    }
+    state.editingId = null;
+  } else {
+    state.articles.unshift({
+      id: nextId++, title, excerpt, body,
+      category: document.getElementById('art-category').value,
+      author: document.getElementById('art-author').value||'Anonim',
+      tags, status: document.getElementById('art-status').value,
+      hero: document.getElementById('art-hero').value==='true',
+      date: dateStr, img: state.imgData||null,
+    });
+    showToast('Artikel berhasil dipublikasikan!');
+  }
+  document.getElementById('article-count-badge').textContent = state.articles.length;
+  renderAll();
+  updateStats();
+  showPanel('articles', document.querySelector('[onclick*="articles"]'));
+}
+
+function cancelEdit() {
+  state.editingId = null;
+  showPanel('articles', document.querySelector('[onclick*="articles"]'));
+}
+
+function editArticle(id) {
+  const a = state.articles.find(x=>x.id===id);
+  if(!a) return;
+  state.editingId = id;
+  state.imgData = a.img||null;
+  populateCatSelect();
+  document.getElementById('art-title').value = a.title;
+  document.getElementById('art-excerpt').value = a.excerpt;
+  document.getElementById('art-body').value = a.body||'';
+  document.getElementById('art-author').value = a.author||'';
+  document.getElementById('art-tags').value = (a.tags||[]).join(', ');
+  document.getElementById('art-status').value = a.status||'published';
+  document.getElementById('art-hero').value = a.hero?'true':'false';
+  document.getElementById('art-category').value = a.category;
+  document.getElementById('art-img-url').value = a.img||'';
+  if(a.img) { document.getElementById('img-preview').src=a.img; document.getElementById('img-preview').classList.add('show'); }
+  else { document.getElementById('img-preview').classList.remove('show'); }
+  document.getElementById('article-form-title').textContent='✏️ Edit Artikel';
+  document.getElementById('edit-id').value = id;
+  showPanel('new-article', document.querySelector('[onclick*="new-article"]'));
+  window.scrollTo(0,0);
+}
+
+let pendingDeleteId = null;
+function deleteArticle(id) {
+  pendingDeleteId = id;
+  document.getElementById('delete-modal').classList.add('open');
+  document.getElementById('confirm-delete-btn').onclick = () => {
+    state.articles = state.articles.filter(a=>a.id!==id);
+    closeModal('delete-modal');
+    renderArticleTable();
+    renderAll();
+    updateStats();
+    showToast('Artikel berhasil dihapus','error');
+    document.getElementById('article-count-badge').textContent = state.articles.length;
+  };
+}
+
+function renderArticleTable() {
+  const q = (document.getElementById('admin-search')||{}).value||'';
+  const arts = state.articles.filter(a => !q || a.title.toLowerCase().includes(q.toLowerCase()) || a.category.toLowerCase().includes(q.toLowerCase()));
+  const tbody = document.getElementById('article-table-body');
+  const empty = document.getElementById('articles-empty');
+  if(arts.length === 0) {
+    tbody.innerHTML='';
+    if(empty) empty.style.display='block';
+    return;
+  }
+  if(empty) empty.style.display='none';
+  tbody.innerHTML = arts.map(a=>`
+    <tr>
+      <td>${a.img?`<img class="td-img" src="${a.img}" alt="">`:`<div class="td-img-placeholder">${ARTICLE_EMOJIS[a.id%ARTICLE_EMOJIS.length]}</div>`}</td>
+      <td style="max-width:260px;"><div style="font-weight:500;font-size:14px;line-height:1.4;margin-bottom:2px;">${a.title}</div>${a.hero?'<span style="font-size:10px;color:var(--accent);">⭐ Hero</span>':''}</td>
+      <td><span style="font-size:12px;color:${state.categoryColors[a.category]||'var(--accent)'}">● ${a.category}</span></td>
+      <td style="font-size:13px;color:var(--muted);">${a.author||'—'}</td>
+      <td><span class="status-badge status-${a.status}">${a.status==='published'?'✅ Publik':a.status==='draft'?'📝 Draft':'⭐ Unggulan'}</span></td>
+      <td style="font-size:12px;color:var(--muted);font-family:var(--font-mono);">${a.date}</td>
+      <td class="td-actions">
+        <button class="btn btn-outline btn-sm" onclick="editArticle(${a.id})">✏️ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteArticle(${a.id})">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ===== CATEGORIES =====
+function addCategory() {
+  const name = document.getElementById('new-cat-name').value.trim();
+  if(!name) { showToast('Masukkan nama kategori!','error'); return; }
+  if(state.categories.includes(name)) { showToast('Kategori sudah ada!','error'); return; }
+  state.categories.push(name);
+  state.categoryColors[name] = state.selectedCatColor;
+  document.getElementById('new-cat-name').value='';
+  renderCatList();
+  populateCatSelect();
+  updateNavCategories();
+  renderFooterCats();
+  renderTagBar();
+  showToast(`Kategori "${name}" berhasil ditambahkan!`);
+}
+function deleteCategory(name) {
+  state.categories = state.categories.filter(c=>c!==name);
+  renderCatList();
+  populateCatSelect();
+  updateNavCategories();
+  renderFooterCats();
+  showToast(`Kategori "${name}" dihapus`,'error');
+}
+function renderCatList() {
+  document.getElementById('cat-list').innerHTML = state.categories.map(c=>`
+    <div class="cat-item">
+      <div class="cat-item-name"><div class="cat-dot" style="background:${state.categoryColors[c]||'#888'}"></div>${c}</div>
+      <button class="btn btn-ghost btn-sm" onclick="deleteCategory('${c}')" style="color:var(--red)">🗑</button>
+    </div>`).join('');
+}
+function selectColor(color, el) {
+  state.selectedCatColor = color;
+  document.querySelectorAll('.cat-color-opt').forEach(e=>e.style.border='2px solid transparent');
+  if(el) el.style.border = '2px solid var(--accent)';
+}
+function updateNavCategories() {
+  const nav = document.getElementById('main-nav');
+  const actionDiv = nav.querySelector('.header-actions');
+  nav.innerHTML = '';
+  nav.appendChild(Object.assign(document.createElement('div'),{className:'nav-item active',textContent:'Semua',onclick:()=>filterCategory('Semua',event.target)}));
+  state.categories.forEach(c=>{
+    const d=document.createElement('div');d.className='nav-item';d.textContent=c;d.onclick=()=>filterCategory(c,d);nav.appendChild(d);
+  });
+  if(actionDiv) nav.appendChild(actionDiv);
+}
+
+// ===== TICKER =====
+function renderTickerItems() {
+  document.getElementById('ticker-items-list').innerHTML = state.tickerItems.length ? state.tickerItems.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:var(--r);padding:8px 12px;border:1px solid var(--border);">
+      <span style="font-size:13px;flex:1;">${t}</span>
+      <button class="btn btn-ghost btn-sm" onclick="deleteTickerItem(${i})" style="color:var(--red);padding:2px 6px;">🗑</button>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px;">Belum ada teks berjalan</div>';
+  updateTickerDisplay();
+}
+function addTickerItem() {
+  const txt = document.getElementById('new-ticker-text').value.trim();
+  if(!txt) { showToast('Masukkan teks dahulu!','error'); return; }
+  state.tickerItems.push(txt);
+  document.getElementById('new-ticker-text').value='';
+  renderTickerItems();
+  showToast('Teks berjalan ditambahkan!');
+}
+function deleteTickerItem(i) { state.tickerItems.splice(i,1); renderTickerItems(); }
+function clearAllTicker() { state.tickerItems=[]; renderTickerItems(); showToast('Semua teks berjalan dihapus','error'); }
+function toggleTicker() {
+  state.tickerOn = !state.tickerOn;
+  document.getElementById('ticker-toggle').classList.toggle('on',state.tickerOn);
+  document.getElementById('ticker-wrap').style.display = state.tickerOn?'flex':'none';
+}
+function updateTickerLabel(v) {
+  state.tickerLabel=v;
+  document.querySelector('.ticker-label').textContent=v;
+}
+function updateTickerDisplay() {
+  const track = document.getElementById('ticker-track');
+  const items = state.tickerItems.length ? state.tickerItems : ['Tidak ada pengumuman saat ini'];
+  const doubled = [...items,...items];
+  track.innerHTML = doubled.map(t=>`<span class="ticker-item">${t}</span>`).join('');
+}
+
+// ===== SETTINGS =====
+function loadSettings() {
+  const s = state.settings;
+  document.getElementById('setting-site-name').value=s.siteName||'';
+  document.getElementById('setting-tagline').value=s.tagline||'';
+  document.getElementById('setting-desc').value=s.desc||'';
+  document.getElementById('setting-copyright').value=s.copyright||'';
+  document.getElementById('setting-email').value=s.email||'';
+  document.getElementById('setting-phone').value=s.phone||'';
+  document.getElementById('setting-address').value=s.address||'';
+}
+function saveSettings() {
+  state.settings.siteName = document.getElementById('setting-site-name').value;
+  state.settings.tagline = document.getElementById('setting-tagline').value;
+  state.settings.desc = document.getElementById('setting-desc').value;
+  state.settings.copyright = document.getElementById('setting-copyright').value;
+  state.settings.email = document.getElementById('setting-email').value;
+  state.settings.phone = document.getElementById('setting-phone').value;
+  state.settings.address = document.getElementById('setting-address').value;
+  renderFooterContact();
+  showToast('Pengaturan berhasil disimpan!');
+}
+function updateSiteName(v) { state.settings.siteName=v; }
+function updateTagline(v) { state.settings.tagline=v; }
+function updateDesc(v) { state.settings.desc=v; }
+function updateCopyright(v) { state.settings.copyright=v; }
+
+function toggleFeature(f) {
+  state.features[f] = !state.features[f];
+  document.getElementById(f+'-toggle').classList.toggle('on',state.features[f]);
+  if(f==='hero') { const h=document.getElementById('hero-section'); h.style.display=state.features.hero?'':'none'; }
+  if(f==='footer') { document.querySelector('footer').style.display=state.features.footer?'':'none'; document.querySelector('.footer-bottom').style.display=state.features.footer?'':'none'; }
+  if(f==='tags') renderTagBar();
+}
+
+// ===== APPEARANCE =====
+function changeAccent(color, color2) {
+  document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--accent2', color2||color);
+  state.accentColor=color; state.accent2Color=color2||color;
+  document.getElementById('custom-accent').value=color;
+  document.getElementById('custom-accent-hex').value=color;
+  document.getElementById('logo-preview-accent').style.color=color;
+}
+function updateLogo() {
+  const p1=document.getElementById('logo-part1').value||'Campus';
+  const p2=document.getElementById('logo-part2').value||'Press';
+  state.logoP1=p1; state.logoP2=p2;
+  document.getElementById('logo-preview').innerHTML=`${p1}<span id="logo-preview-accent" style="color:var(--accent)">${p2}</span>`;
+}
+function applyAppearance() {
+  document.querySelectorAll('.logo').forEach(l=>l.innerHTML=`${state.logoP1}<span style="color:var(--accent)">${state.logoP2}</span>`);
+  showToast('Tampilan berhasil diterapkan!');
+}
+
+// ===== STATS =====
+function updateStats() {
+  const total = state.articles.length;
+  const pub = state.articles.filter(a=>a.status==='published'||a.status==='featured').length;
+  const draft = state.articles.filter(a=>a.status==='draft').length;
+  document.getElementById('stat-total').textContent=total;
+  document.getElementById('stat-published').textContent=pub;
+  document.getElementById('stat-draft').textContent=draft;
+  document.getElementById('stat-cats').textContent=state.categories.length;
+  document.getElementById('article-count-badge').textContent=total;
+}
+function renderRecentArticles() {
+  const recents = state.articles.slice(0,5);
+  document.getElementById('recent-articles-list').innerHTML = recents.length ? recents.map(a=>`
+    <div style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;" onclick="editArticle(${a.id})">
+      <div style="font-size:20px;">${ARTICLE_EMOJIS[a.id%ARTICLE_EMOJIS.length]}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:500;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${a.title}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;font-family:var(--font-mono);">${a.category} · ${a.date}</div>
+      </div>
+      <span class="status-badge status-${a.status}" style="font-size:10px;">${a.status==='featured'?'⭐':a.status==='draft'?'📝':'✅'}</span>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:13px;">Belum ada artikel</div>';
+}
+
+// ===== SEARCH =====
+function openSearch() {
+  document.getElementById('search-modal').classList.add('open');
+  setTimeout(()=>document.getElementById('search-input').focus(),100);
+}
+function closeSearch() {
+  document.getElementById('search-view').style.display='none';
+  document.getElementById('public-view').style.display='block';
+}
+function performSearch(q) {
+  const preview = document.getElementById('search-preview');
+  if(!q.trim()) { preview.innerHTML=''; return; }
+  const results = state.articles.filter(a=>a.status!=='draft'&&(a.title.toLowerCase().includes(q.toLowerCase())||a.excerpt.toLowerCase().includes(q.toLowerCase())||(a.category||'').toLowerCase().includes(q.toLowerCase())));
+  if(!results.length) { preview.innerHTML='<div style="color:var(--muted);font-size:13px;padding:12px;text-align:center;">Tidak ditemukan hasil untuk "'+q+'"</div>'; return; }
+  preview.innerHTML = results.slice(0,6).map(a=>`
+    <div style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:10px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);" onclick="selectSearchResult(${a.id})">
+      <div style="font-size:24px;">${ARTICLE_EMOJIS[a.id%ARTICLE_EMOJIS.length]}</div>
+      <div><div style="font-size:14px;font-weight:500;">${a.title}</div><div style="font-size:12px;color:var(--muted);">${a.category} · ${a.date}</div></div>
+    </div>`).join('');
+}
+function selectSearchResult(id) {
+  closeModal('search-modal');
+  openArticle(id);
+}
+
+// ===== MODAL / TOAST =====
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); }));
+function showToast(msg, type='success') {
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.getElementById('toast-icon').textContent=type==='error'?'❌':'✅';
+  t.className='toast show '+(type||'');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ===== DRAG & DROP IMAGE =====
+const dropArea = document.getElementById('img-drop-area');
+if(dropArea) {
+  dropArea.addEventListener('dragover',e=>{ e.preventDefault(); dropArea.classList.add('drag'); });
+  dropArea.addEventListener('dragleave',()=>dropArea.classList.remove('drag'));
+  dropArea.addEventListener('drop',e=>{ e.preventDefault(); dropArea.classList.remove('drag'); const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')) handleImageUpload({target:{files:[f]}}); });
+}
+
+</script>
+</body>
+</html>
